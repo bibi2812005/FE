@@ -1,0 +1,30 @@
+{
+  "name": "ai-study-hub",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "vite build",
+    "start": "NODE_ENV=production node server.js",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@ant-design/cssinjs": "^1.23.0",
+    "@ant-design/icons": "^6.0.0",
+    "@google/genai": "^1.29.0",
+    "@tailwindcss/vite": "^4.1.14",
+    "@vitejs/plugin-react": "^5.0.4",
+    "antd": "^5.25.0",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "lucide-react": "^0.546.0",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "vite": "^6.2.3"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "tailwindcss": "^4.1.14"
+  }
+}

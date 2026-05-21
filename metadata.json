@@ -1,0 +1,6 @@
+{
+  "name": "AI Study Hub",
+  "description": "Nền tảng quản lý tài liệu học tập tập trung kết hợp trợ lý AI thông minh giúp tóm tắt, hỏi đáp và cộng tác.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
