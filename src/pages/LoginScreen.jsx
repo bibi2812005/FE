@@ -181,7 +181,7 @@ export default function LoginScreen({ onLoginSuccess, onNavigate, currentView })
                   htmlType="submit"
                   block
                   icon={<ArrowRightOutlined />}
-                  className="h-12 rounded-2xl font-bold text-xs bg-gradient-to-r from-[#ea580c] to-amber-500 hover:from-[#c2410c] hover:to-orange-500 border-none transition-all duration-300 shadow-md shadow-orange-500/10 cursor-pointer"
+                  className="h-12 text-white rounded-2xl font-bold text-xs bg-gradient-to-r from-[#ea580c] to-amber-500 hover:from-[#c2410c] hover:to-orange-500 border-none transition-all duration-300 shadow-md shadow-orange-500/10 cursor-pointer"
                 >
                   {isRegister ? 'Khởi tạo tài khoản' : 'Đăng nhập hệ thống'}
                 </Button>
@@ -253,11 +253,11 @@ export default function LoginScreen({ onLoginSuccess, onNavigate, currentView })
             <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-6 text-white border border-white/25">
               <SafetyCertificateOutlined style={{ fontSize: 24 }} />
             </div>
-            
+
             <h2 className="text-3xl font-black text-white mb-4 leading-tight tracking-tight">
               Mở khóa tri thức cùng Trợ lý Học tập AI
             </h2>
-            
+
             <p className="text-xs text-white/80 mb-8 leading-relaxed font-semibold">
               Tự động hóa phân loại, phân tích học trình cá nhân và giải đáp kiến thức nâng cao với công nghệ học sâu tích hợp.
             </p>

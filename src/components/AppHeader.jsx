@@ -20,9 +20,7 @@ export default function AppHeader({ searchTerm, onSearchChange, children }) {
       </div>
 
       <div className="flex items-center gap-4">
-        <button className="p-2 bg-white rounded-xl shadow-sm text-[#5d5f5f] hover:text-[#ea580c] transition-all cursor-pointer">
-          <GlobalOutlined style={{ fontSize: 16 }} />
-        </button>
+
         <Badge dot offset={[-2, 2]}>
           <button className="p-2 bg-white rounded-xl shadow-sm text-[#5d5f5f] hover:text-[#ea580c] transition-all cursor-pointer">
             <BellOutlined style={{ fontSize: 16 }} />
