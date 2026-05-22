@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap');
 
 /* CSS Layer ordering: Ant Design + Tailwind CSS coexistence */
 @layer theme, base, antd, components, utilities;
@@ -8,123 +8,220 @@
 @import "tailwindcss/utilities.css" layer(utilities);
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Display", "Inter", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  /* Primary palette (Orange) */
-  --color-primary: #ea580c;
-  --color-primary-container: #fed7aa;
+  /* Premium Primary Palette */
+  --color-primary: #ff5c00;
+  --color-primary-container: #fff5f0;
   --color-on-primary: #ffffff;
-  --color-on-primary-container: #431407;
-  --color-inverse-primary: #ffedd5;
-  --color-primary-fixed: #ffedd5;
-  --color-primary-fixed-dim: #fed7aa;
-  --color-on-primary-fixed: #431407;
-  --color-on-primary-fixed-variant: #9a3412;
+  --color-on-primary-container: #ff5c00;
 
-  /* Surface palette */
-  --color-surface: #f8f9ff;
-  --color-surface-dim: #cbdbf5;
-  --color-surface-bright: #f8f9ff;
+  /* Ultra-Premium Bright Light Mode */
+  --color-surface: #ffffff;
+  --color-surface-dim: #fafafb;
+  --color-surface-bright: #ffffff;
   --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #eff4ff;
-  --color-surface-container: #e5eeff;
-  --color-surface-container-high: #dce9ff;
-  --color-surface-container-highest: #d3e4fe;
-  --color-on-surface: #0b1c30;
-  --color-on-surface-variant: #ea580c;
-  --color-inverse-surface: #213145;
-  --color-inverse-on-surface: #eaf1ff;
+  --color-surface-container-low: #f9f9fb;
+  --color-surface-container: #ffffff;
+  --color-surface-container-high: #f5f5f7;
+  --color-surface-container-highest: #e8e8ed;
+  --color-on-surface: #1d1d1f;
+  --color-on-surface-variant: #51515f;
+  --color-inverse-surface: #101014;
+  --color-inverse-on-surface: #ffffff;
 
-  /* Outline */
-  --color-outline: #f97316;
-  --color-outline-variant: #fed7aa;
+  /* Borders */
+  --color-outline: rgba(0, 0, 0, 0.06);
+  --color-outline-variant: rgba(0, 0, 0, 0.03);
 
-  /* Secondary */
-  --color-secondary: #5d5f5f;
-  --color-on-secondary: #ffffff;
-  --color-secondary-container: #dfe0e0;
-  --color-on-secondary-container: #616363;
-  --color-secondary-fixed: #e2e2e2;
-  --color-secondary-fixed-dim: #c6c6c7;
-  --color-on-secondary-fixed: #1a1c1c;
-  --color-on-secondary-fixed-variant: #454747;
-
-  /* Tertiary */
-  --color-tertiary: #0062a1;
+  /* Accents */
+  --color-secondary: #00e5ff;
+  --color-on-secondary: #000000;
+  --color-tertiary: #a855f7;
   --color-on-tertiary: #ffffff;
-  --color-tertiary-container: #059eff;
-  --color-on-tertiary-container: #003357;
-  --color-tertiary-fixed: #d0e4ff;
-  --color-tertiary-fixed-dim: #9ccaff;
-  --color-on-tertiary-fixed: #001d35;
-  --color-on-tertiary-fixed-variant: #00497b;
-
-  /* Error */
-  --color-error: #ba1a1a;
-  --color-on-error: #ffffff;
-  --color-error-container: #ffdad6;
-  --color-on-error-container: #93000a;
 }
 
 @layer utilities {
-  .soft-shadow {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  /* Apple/Linear Luxury Glassmorphism in Light Mode */
+  .premium-glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  
+  .premium-glass-light {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px) saturate(195%);
+    -webkit-backdrop-filter: blur(20px) saturate(195%);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+
+  /* Cosmic glows and neon auras for light theme */
+  .orange-glow {
+    box-shadow: 0 4px 24px rgba(255, 92, 0, 0.12), 0 0 40px rgba(255, 92, 0, 0.04);
+  }
+
+  .accent-glow {
+    box-shadow: 0 4px 20px rgba(0, 229, 255, 0.08);
+  }
+
+  /* Linear-style luxury text gradients */
+  .text-gradient-orange {
+    background: linear-gradient(135deg, #ff8a00 0%, #ff5c00 50%, #e52e00 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .text-gradient-cosmic {
+    background: linear-gradient(90deg, #ff5c00, #ff8a00, #a855f7, #007aff);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: cosmicFlow 8s linear infinite;
+  }
+
+  .bg-gradient-premium {
+    background: linear-gradient(180deg, rgba(255, 92, 0, 0.02) 0%, rgba(255, 255, 255, 0.95) 100%);
+  }
+
+  .border-glow-hover:hover {
+    border-color: rgba(255, 92, 0, 0.3);
+    box-shadow: 0 0 15px rgba(255, 92, 0, 0.06);
   }
 }
 
-/* Global smooth scrollbar */
+/* Cosmic fluid animated gradient flow */
+@keyframes cosmicFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Clean bright background grids and glows */
+.grid-mesh {
+  background-color: #fafafb;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(255, 92, 0, 0.02) 0px, transparent 50%),
+    radial-gradient(at 50% 0%, rgba(168, 85, 247, 0.015) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(0, 122, 255, 0.02) 0px, transparent 50%),
+    linear-gradient(rgba(0, 0, 0, 0.01) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.01) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+}
+
+/* Smooth minimalistic scrollbars for light mode */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: 10px;
 }
 
-/* Ant Design overrides to match our design system */
+/* Custom interactive classes */
+.hover-card-depth {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hover-card-depth:hover {
+  transform: translateY(-4px) scale(1.01);
+  border-color: rgba(255, 92, 0, 0.15);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.03), 0 0 20px rgba(255, 92, 0, 0.02);
+}
+
+/* Premium light input states */
+.modern-input {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  color: #1d1d1f;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.modern-input:focus {
+  border-color: rgba(255, 92, 0, 0.5);
+  box-shadow: 0 0 15px rgba(255, 92, 0, 0.08);
+  outline: none;
+}
+
+/* Ant Design overrides for Premium Light Theme */
 .ant-btn-primary {
-  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.2) !important;
+  background: linear-gradient(135deg, #ff8a00, #ff5c00) !important;
+  border: none !important;
+  font-weight: 600 !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(255, 92, 0, 0.18) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
-
 .ant-btn-primary:hover {
-  box-shadow: 0 4px 16px rgba(234, 88, 12, 0.3) !important;
+  opacity: 0.95;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 92, 0, 0.28) !important;
+}
+.ant-btn-default {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #51515f !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.ant-btn-default:hover {
+  background: rgba(0, 0, 0, 0.01) !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  color: #1d1d1f !important;
 }
 
-/* Custom animation keyframes */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.ant-table {
+  background: transparent !important;
+  color: #1d1d1f !important;
+}
+.ant-table-thead > tr > th {
+  background: rgba(0, 0, 0, 0.015) !important;
+  color: #51515f !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
+  font-weight: 600 !important;
+}
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03) !important;
+}
+.ant-table-row:hover > td {
+  background: rgba(0, 0, 0, 0.01) !important;
 }
 
-@keyframes scaleUp {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+.ant-pagination-item-active {
+  border-color: #ff5c00 !important;
+}
+.ant-pagination-item-active a {
+  color: #ff5c00 !important;
+}
+.ant-select-selector {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #1d1d1f !important;
+  border-radius: 12px !important;
+}
+.ant-select-dropdown {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+.ant-select-item-option-selected {
+  background-color: rgba(255, 92, 0, 0.08) !important;
+  color: #ff5c00 !important;
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Dynamic Accent Styles mapping from --color-primary */
+:root {
+  --color-primary: #ff5c00;
 }
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
-
-.animate-scale-up {
-  animation: scaleUp 0.3s ease-out;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.4s ease-out;
+.orange-glow {
+  box-shadow: 0 4px 20px var(--color-primary) 20;
 }

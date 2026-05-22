@@ -4,279 +4,250 @@
  */
 
 import { useState } from 'react';
-import { Button, Card, Segmented, Modal, Form, Input, Select, Tag, Statistic, message } from 'antd';
-import {
-  TeamOutlined,
-  SearchOutlined,
-  PlusOutlined,
-  CheckOutlined,
-  FolderOpenOutlined,
-  StarOutlined,
-  NumberOutlined,
-  ArrowRightOutlined,
-  ThunderboltOutlined,
-} from '@ant-design/icons';
-import AppHeader from '../components/AppHeader.jsx';
+import { Button, Tag, Modal, Form, Select, message } from 'antd';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const { TextArea } = Input;
-
-export default function CommunityScreen({ groups, onToggleJoin, onAddGroup, onNavigate }) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+export default function CommunityScreen({ groups, searchTerm = '', onToggleJoin, onAddGroup }) {
+  const [localSearch, setLocalSearch] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [form] = Form.useForm();
 
-  const categories = ['All', 'Computer Science', 'Humanities', 'Economics', 'Natural Sciences'];
-  const categoryLabels = {
-    All: 'Tất cả học phần',
-    'Computer Science': 'Khoa học MT',
-    Humanities: 'Nhân văn',
-    Economics: 'Kinh tế',
-    'Natural Sciences': 'Tự nhiên',
-  };
-
-  const filteredGroups = groups.filter((g) => {
-    const matchesSearch = g.name.toLowerCase().includes(searchTerm.toLowerCase()) || g.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || g.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
   const handleCreateGroup = (values) => {
-    const sampleImages = {
-      'Computer Science': 'https://lh3.googleusercontent.com/aida-public/AB6AXuBL__MaLnrRAoDtqpn7wHLeaS8IImZk1gvQ0fjuS4DVj1-9iBZwranDAecMvtIzjrou36PWOLLAhSBnK75kmayhTT4gLBS4kD_wwRxTP-6mU0xzjVuprU34I_Oukn217eqsIPN22rQ6s2ITGl9YEtUMfRtpGT1dQqohK2hjUsGLjEe88uraah_rDHbrgZPHir_4W-B3Vj2nRG2wm7oPDyeiTmDpvbjaHrIaaEi8G1-qYlZtWzAKDrGxdrIpze8XDFL5jXrJsx5_kwE',
-      Humanities: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBzuHBfyEulLDS7NLAlBTQ9ZA581bUaL5q3BbCF5DO-0k1tjHMxj_117W-uFLEiixZeakU2ofejHCdxwnZxRCFP0cJKNHMQjwJvHmMX4JcEqpBOnYEbbWiFLRY2zg2urcYF7O3eOPSVX3eWtcx_eqJS1OSQ49IsPcHEMbdnjp0iGVjj3-ZXTZTERlKX2zK2IgUbXSpRIrGrXhxZRTHZaJAJBNY1_OR0WCzKCRQZ7Uu1f2vdluyMXCqCdt1Hcezg1XgkRQTSYQLkn00',
-      Economics: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD6krzE3AtQi2sFzAnMWe_v_gJkvOoAufK5AkQ69KjZI93tVt2LtsC93gUnckTVBraoUOYKPDKW9YbEGl9LNFBhvXipCNRpTQYNKMwT0DOO8xR_VsG6WrEaLGq06eps26JTFqDaAOOFQjVbnuSJJa7UpUla635EHAKt8kxSOQl2xnbZktmSSevaK_eTWN1vbwhnWXlfhr84X31G0mL8sFryb_xi3vO8KMzRWuYArStJV8sEEv8TnNYZHrB_mwPr62QpuA2eFiiLU-Y',
+    const newGroup = {
+      id: 'grp_' + Date.now(),
+      name: values.name,
+      description: values.description,
+      subject: values.subject,
+      members: '1 thành viên',
+      documentsCount: '0 giáo trình',
+      isJoined: true,
     };
 
-    onAddGroup({
-      id: 'group_' + Date.now(),
-      name: values.name,
-      category: values.category,
-      description: values.description || 'Không gian giao lưu học thuật, chia sẻ giáo trình.',
-      image: sampleImages[values.category] || sampleImages['Computer Science'],
-      members: '1 thành viên',
-      filesCount: 1,
-      isJoined: true,
-    });
-
+    onAddGroup(newGroup);
     form.resetFields();
     setShowCreateModal(false);
-    message.success(`Đã tạo nhóm "${values.name}" thành công!`);
+    message.success(`Đã khởi tạo thành công nhóm học tập "${values.name}"!`);
   };
 
-  const featuredGroup = groups.find((g) => g.isTopRated) || groups[0];
+  const finalSearchQuery = localSearch || searchTerm || '';
+  const filteredGroups = groups.filter((grp) => {
+    return (
+      grp.name.toLowerCase().includes(finalSearchQuery.toLowerCase()) ||
+      grp.subject.toLowerCase().includes(finalSearchQuery.toLowerCase())
+    );
+  });
 
-  const trendingTopics = [
-    { emoji: '🧠', name: 'Cognitive Science Hub', desc: 'Nghiên cứu quá trình tư duy, nhận thức kết hợp mạng neuron.', stats: '420 bài • 12 online' },
-    { emoji: '📖', name: 'Literature & Philosophy', desc: 'Triết học cổ điển phương Tây, phân tích văn học so sánh.', stats: '210 bài • 5 online' },
-    { emoji: '💻', name: 'Quantum Computing 101', desc: 'Xây dựng giải thuật cổng lượng tử qubit cơ bản.', stats: '105 bài • 9 online' },
-  ];
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }
+  };
 
   return (
-    <div className="flex-1 w-full flex flex-col min-h-screen text-left">
-      <main className="flex-1 p-6 md:p-8 flex flex-col min-h-screen text-left">
-        <AppHeader searchTerm={searchTerm} onSearchChange={setSearchTerm}>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setShowCreateModal(true)} className="rounded-xl font-bold text-xs">
+    <div className="flex-1 w-full h-full overflow-y-auto px-4 md:px-8 pb-10 pt-4 text-left select-none relative">
+      <div>
+        
+        {/* Banner hero header component */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-8 p-6 md:p-8 rounded-3xl bg-gradient-to-r from-[#ff8a00] to-[#ff5c00] text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-xl relative overflow-hidden orange-glow"
+        >
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="text-left space-y-2 relative z-10 max-w-xl">
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-white/70 bg-white/10 px-3 py-1 rounded-full inline-block">Mạng xã hội học thuật</span>
+            <h3 className="text-[20px] md:text-[24px] font-extrabold tracking-tight">Cộng đồng chia sẻ & Đồng hành thi cử</h3>
+            <p className="text-[12.5px] text-white/80 font-semibold leading-relaxed">
+              Khám phá hàng chục nhóm thảo luận chuyên môn đại học. Tải lên giáo trình của bạn để hỗ trợ đồng đội giải quyết bài tập nhóm.
+            </p>
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.03, backgroundColor: '#ffffff' }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setShowCreateModal(true)}
+            className="bg-white text-black font-extrabold text-[13px] rounded-xl px-6 py-3 cursor-pointer shadow-lg hover:bg-white/95"
+          >
             Tạo nhóm thảo luận
-          </Button>
-        </AppHeader>
+          </motion.button>
+        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Left 2 cols */}
-          <section className="lg:col-span-2 space-y-8">
-            <div>
-              <h2 className="text-2xl font-black text-[#0b1c30]">Khám phá cộng đồng</h2>
-              <p className="text-xs text-[#5d5f5f] mt-0.5">Tham gia nhóm học tập để tải giáo trình chia sẻ chất lượng</p>
-            </div>
-
-            {/* Featured group */}
-            {featuredGroup && (
-              <div className="bg-white rounded-[2rem] border border-white soft-shadow overflow-hidden relative group">
-                <div className="h-44 md:h-52 w-full relative">
-                  <img alt={featuredGroup.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src={featuredGroup.image} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                  <div className="absolute top-4 left-4">
-                    <Tag icon={<StarOutlined />} color="gold" className="font-black text-[10px] uppercase tracking-widest rounded-full border-0">
-                      Nổi bật tuần
-                    </Tag>
-                  </div>
-                </div>
-                <div className="p-6 md:p-8 space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                      <Tag color="orange" className="text-[10px] font-extrabold uppercase tracking-wider rounded-full">{featuredGroup.category}</Tag>
-                      <h3 className="text-xl font-bold text-[#0b1c30] mt-2">{featuredGroup.name}</h3>
-                    </div>
-                    <Button
-                      type={featuredGroup.isJoined ? 'default' : 'primary'}
-                      icon={featuredGroup.isJoined ? <CheckOutlined /> : null}
-                      onClick={() => onToggleJoin(featuredGroup.id)}
-                      danger={featuredGroup.isJoined}
-                      className="rounded-xl font-bold text-xs"
-                    >
-                      {featuredGroup.isJoined ? 'Đã gia nhập' : 'Gia nhập ngay'}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-[#5d5f5f] leading-relaxed font-semibold">{featuredGroup.description}</p>
-                  <div className="pt-4 border-t border-slate-100 flex items-center gap-6 text-[10px] font-bold text-[#5d5f5f]">
-                    <span className="flex items-center gap-1.5 bg-slate-100 py-1.5 px-3 rounded-lg"><TeamOutlined className="text-[#ea580c]" /> {featuredGroup.members}</span>
-                    <span className="flex items-center gap-1.5 bg-slate-100 py-1.5 px-3 rounded-lg"><FolderOpenOutlined className="text-[#ea580c]" /> {featuredGroup.filesCount} giáo trình</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Category filter */}
-            <div className="border-b pb-4 border-slate-200">
-              <Segmented
-                options={categories.map((c) => ({ label: categoryLabels[c] || c, value: c }))}
-                value={selectedCategory}
-                onChange={setSelectedCategory}
-                className="font-extrabold"
-              />
-            </div>
-
-            {/* Group cards grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {filteredGroups.filter((g) => !g.isTopRated).map((g) => (
-                <div key={g.id} className="bg-white rounded-3xl border border-slate-200/40 p-5 soft-shadow flex flex-col justify-between hover:-translate-y-1 transition-all duration-300 relative group overflow-hidden text-left">
-                  <div>
-                    <div className="h-32 mb-4 rounded-2xl overflow-hidden relative">
-                      <img alt={g.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src={g.image} />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      <Tag className="absolute bottom-3 left-3 text-[9px] font-extrabold text-white/90 bg-white/20 backdrop-blur-md rounded-md border border-white/10 uppercase">
-                        {g.category}
+        {/* Main Grid View */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          
+          {/* Group Grid (lg:col-span-8) */}
+          <div className="lg:col-span-8 space-y-4">
+            <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest block text-left">Danh sách nhóm thảo luận</span>
+            
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-1 sm:grid-cols-2 gap-6"
+            >
+              {filteredGroups.map((grp) => (
+                <motion.div
+                  key={grp.id}
+                  variants={itemVariants}
+                  className="bg-white border border-black/5 hover:border-[#ff5c00]/30 rounded-3xl p-5 shadow-sm flex flex-col justify-between hover-card-depth cursor-pointer overflow-hidden relative"
+                >
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-start gap-2">
+                      <Tag color="purple" className="font-bold text-[9px] uppercase rounded-full border-none px-2.5 py-0.5">
+                        {grp.subject}
                       </Tag>
+                      <span className="text-[12px] font-bold text-black/40"><i className="bi bi-people-fill mr-1 text-[#ff5c00]" /> {grp.members}</span>
                     </div>
-                    <h4 className="font-extrabold text-sm text-[#0b1c30] group-hover:text-[#ea580c] transition-all mb-1">{g.name}</h4>
-                    <p className="text-[11px] text-[#5d5f5f] font-semibold leading-relaxed line-clamp-2 bg-slate-50 p-2 rounded-lg border border-slate-100/30">{g.description}</p>
+                    <div className="text-left space-y-1.5">
+                      <h4 className="text-[16px] font-extrabold text-black tracking-tight">{grp.name}</h4>
+                      <p className="text-[12.5px] text-black/55 font-semibold leading-relaxed line-clamp-2">{grp.description}</p>
+                    </div>
                   </div>
-                  <div className="pt-4 border-t border-slate-100/80 flex items-center justify-between gap-4 mt-4">
-                    <div className="text-[10px] text-[#5d5f5f]/60 font-semibold space-y-0.5">
-                      <p className="flex items-center gap-1"><TeamOutlined /> {g.members}</p>
-                      <p className="flex items-center gap-1"><FolderOpenOutlined /> {g.filesCount} tài liệu</p>
-                    </div>
+
+                  <div className="pt-4 border-t border-black/5 flex justify-between items-center mt-5">
+                    <span className="text-[11px] font-bold text-black/40"><i className="bi bi-folder2-open mr-1 text-[#ff5c00]" /> {grp.documentsCount}</span>
                     <Button
-                      type={g.isJoined ? 'default' : 'primary'}
+                      type={grp.isJoined ? 'default' : 'primary'}
                       size="small"
-                      icon={g.isJoined ? <CheckOutlined /> : null}
-                      onClick={() => onToggleJoin(g.id)}
-                      className="rounded-xl font-bold text-[11px]"
+                      onClick={() => {
+                        onToggleJoin(grp.id);
+                        message.success(grp.isJoined ? 'Đã rời khỏi nhóm.' : `Chào mừng bạn tham gia "${grp.name}"!`);
+                      }}
+                      className="font-bold text-[11px] rounded-lg h-7.5 px-4"
                     >
-                      {g.isJoined ? 'Đang tham gia' : 'Tham gia'}
+                      {grp.isJoined ? 'Đã tham gia' : 'Tham gia'}
                     </Button>
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
-          </section>
+            </motion.div>
+          </div>
 
-          {/* Right sidebar */}
-          <section className="space-y-6">
-            {/* Stats */}
-            <Card className="rounded-3xl soft-shadow text-left" title={<span className="font-extrabold text-sm flex items-center gap-2"><StarOutlined style={{ color: '#f59e0b' }} /> Hoạt động hôm nay</span>}>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center text-xs font-semibold">
-                  <span className="text-[#5d5f5f]/70">Tổng tài liệu chia sẻ</span>
-                  <span className="text-[#ea580c] font-bold">14,250 file</span>
-                </div>
-                <div className="flex justify-between items-center text-xs font-semibold">
-                  <span className="text-[#5d5f5f]/70">Số nhóm thảo luận</span>
-                  <span className="text-[#ea580c] font-bold">128 nhóm</span>
-                </div>
-                <div className="flex justify-between items-center text-xs font-semibold">
-                  <span className="text-[#5d5f5f]/70">Thành viên trực tuyến</span>
-                  <span className="text-green-600 font-bold">● 1,040 online</span>
-                </div>
-              </div>
-            </Card>
-
-            {/* Trending */}
-            <Card className="rounded-3xl soft-shadow text-left" title={<span className="font-extrabold text-sm flex items-center gap-2"><NumberOutlined style={{ color: '#ea580c' }} /> Chủ đề hot nhất</span>}>
+          {/* Metrics panel (lg:col-span-4) */}
+          <div className="lg:col-span-4 flex flex-col gap-6">
+            <div className="premium-glass border border-black/5 rounded-3xl p-6 shadow-sm text-left space-y-5 bg-white">
+              <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest block">Hoạt động hôm nay</span>
+              
               <div className="space-y-4">
-                {trendingTopics.map((t, i) => (
-                  <div
-                    key={i}
-                    onClick={() => message.info(`Đang chuyển tới ${t.name}...`)}
-                    className="p-3.5 rounded-2xl hover:bg-[#ea580c]/5 border border-transparent hover:border-[#fed7aa]/20 transition-all cursor-pointer group flex items-start gap-3"
-                  >
-                    <div className="w-9 h-9 bg-[#e5eeff] rounded-xl flex items-center justify-center font-bold text-[#ea580c] group-hover:bg-[#ea580c] group-hover:text-white transition-all text-sm shrink-0">
-                      {t.emoji}
+                {[
+                  { label: 'Tổng tài liệu chia sẻ', num: '14,250 file', icon: 'bi-files' },
+                  { label: 'Số nhóm thảo luận', num: '128 nhóm', icon: 'bi-chat-square-text' },
+                  { label: 'Học viên trực tuyến', num: '• 1,040 online', icon: 'bi-wifi', active: true },
+                ].map((s, i) => (
+                  <div key={i} className="flex justify-between items-center bg-black/[0.005] p-3 rounded-xl border border-black/5">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-black/40"><i className={`bi ${s.icon} text-[15px]`} /></span>
+                      <span className="text-[12px] font-bold text-black/55">{s.label}</span>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-xs text-[#0b1c30]">{t.name}</h4>
-                      <p className="text-[10px] text-[#5d5f5f] mt-0.5">{t.desc}</p>
-                      <span className="text-[9px] font-extrabold text-[#ea580c] block mt-1">{t.stats}</span>
-                    </div>
+                    <span className={`text-[12.5px] font-bold ${s.active ? 'text-[#34c759]' : 'text-black'}`}>{s.num}</span>
                   </div>
                 ))}
               </div>
-            </Card>
+            </div>
 
-            {/* Ambassador ad */}
-            <div className="bg-[#ea580c] rounded-[2rem] p-6 text-white text-left overflow-hidden relative shadow-lg shadow-[#ea580c]/10">
-              <div className="relative z-10 space-y-4">
-                <ThunderboltOutlined style={{ fontSize: 32, opacity: 0.8 }} />
-                <h4 className="font-extrabold text-base">Tuyển Đại sứ sinh viên Học tập thông minh!</h4>
-                <p className="text-[10px] text-white/80 leading-relaxed font-semibold">
-                  Trở thành người đại diện hỗ trợ chuyển đổi số AI Study Hub tại đại học của bạn và nhận đặc quyền Pro miễn phí trọn đời.
-                </p>
-                <Button
-                  onClick={() => message.info('Đăng ký đại sứ tại vuongbaovipvip@gmail.com')}
-                  className="bg-white hover:bg-slate-50 text-[#ea580c] font-black rounded-xl text-[11px] border-0"
-                  icon={<ArrowRightOutlined />}
-                >
-                  Tìm hiểu chương trình
-                </Button>
+            {/* Trending tags sidebar */}
+            <div className="premium-glass border border-black/5 rounded-3xl p-6 shadow-sm text-left space-y-4 bg-white">
+              <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest block">Chủ đề hot nhất</span>
+              <div className="flex flex-wrap gap-2.5">
+                {['Deep Learning', 'Calculus III', 'Microeconomics', 'Linear Algebra', 'Algorithms', 'Quantum Computing'].map((tag, i) => (
+                  <button
+                    key={i}
+                    onClick={() => message.info(`Lọc tài liệu theo chủ đề: ${tag}`)}
+                    className="px-3 py-1.5 bg-black/[0.01] border border-black/5 hover:border-[#ff5c00]/30 hover:text-black rounded-xl text-[11px] font-bold text-black/60 transition-all cursor-pointer"
+                  >
+                    #{tag}
+                  </button>
+                ))}
               </div>
-              <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-            </div>
-          </section>
-        </div>
-      </main>
-
-      {/* Create Group Modal */}
-      <Modal
-        title={
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#ea580c]/10 flex items-center justify-center text-[#ea580c]">
-              <TeamOutlined style={{ fontSize: 20 }} />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-[#0b1c30]">Tạo nhóm học tập mới</h3>
-              <p className="text-xs text-[#5d5f5f] mt-0.5 font-normal">Kết nối sinh viên cùng chí hướng chia sẻ bài học</p>
             </div>
           </div>
-        }
+
+        </div>
+      </div>
+
+      {/* Group Create Modal (Premium Glass) */}
+      <Modal
+        title={null}
         open={showCreateModal}
         onCancel={() => setShowCreateModal(false)}
         footer={null}
-        width={480}
-        destroyOnHidden
+        width={460}
+        destroyOnClose
+        centered
       >
-        <Form form={form} layout="vertical" onFinish={handleCreateGroup} initialValues={{ category: 'Computer Science' }}>
-          <Form.Item label={<span className="text-[10px] font-extrabold text-[#5d5f5f] uppercase tracking-wider">Tên chủ đề nhóm</span>} name="name" rules={[{ required: true, message: 'Nhập tên nhóm!' }]}>
-            <Input placeholder="Ví dụ: Đại số tuyến tính thầy Cường" className="rounded-xl" />
-          </Form.Item>
-          <Form.Item label={<span className="text-[10px] font-extrabold text-[#5d5f5f] uppercase tracking-wider">Phân ngành cụ thể</span>} name="category">
-            <Select
-              options={[
-                { value: 'Computer Science', label: 'Khoa học Máy tính & AI' },
-                { value: 'Humanities', label: 'Khoa học Xã hội & Nhân văn' },
-                { value: 'Economics', label: 'Kinh tế học' },
-                { value: 'Natural Sciences', label: 'Khoa học Tự nhiên' },
-              ]}
-              className="rounded-xl"
-            />
-          </Form.Item>
-          <Form.Item label={<span className="text-[10px] font-extrabold text-[#5d5f5f] uppercase tracking-wider">Mô tả ngắn gọn</span>} name="description">
-            <TextArea rows={2} placeholder="Nơi giải đáp và nộp đề cương tóm tắt..." className="rounded-xl" />
-          </Form.Item>
-          <div className="flex gap-3 justify-end pt-2">
-            <Button onClick={() => setShowCreateModal(false)} className="rounded-xl font-bold text-xs">Hủy bỏ</Button>
-            <Button type="primary" htmlType="submit" className="rounded-xl font-bold text-xs">Tạo nhóm ngay</Button>
+        <div className="bg-[#fafafb] px-6 py-5 border-b border-black/5 text-black flex items-center gap-4 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff5c00]/3 rounded-full blur-2xl pointer-events-none" />
+          <div className="w-10 h-10 rounded-xl bg-black/[0.01] border border-black/5 flex items-center justify-center text-[#ff5c00] orange-glow">
+            <i className="bi bi-people text-[20px]" />
           </div>
-        </Form>
+          <div className="text-left">
+            <h3 className="text-[16px] font-bold text-black tracking-tight">Tạo nhóm mới</h3>
+            <p className="text-[10px] text-black/40 font-bold uppercase tracking-wider mt-1">Kết nối tri thức học thuật</p>
+          </div>
+        </div>
+
+        <div className="p-6 bg-white rounded-b-2xl">
+          <Form form={form} layout="vertical" onFinish={handleCreateGroup} initialValues={{ subject: 'KHOA HỌC MÁY TÍNH' }}>
+            <Form.Item
+              label={<span className="text-[10px] font-bold text-black/50 uppercase tracking-wider">Tên nhóm thảo luận</span>}
+              name="name"
+              rules={[{ required: true, message: 'Vui lòng điền tên nhóm!' }]}
+            >
+              <input 
+                type="text" 
+                placeholder="Nhóm nghiên cứu Machine Learning K22" 
+                className="w-full bg-black/[0.01] border border-black/8 rounded-xl px-3.5 py-2.5 text-black text-[13px] outline-none focus:border-[#ff5c00] transition-all"
+              />
+            </Form.Item>
+
+            <Form.Item label={<span className="text-[10px] font-bold text-black/50 uppercase tracking-wider">Chuyên ngành học tập</span>} name="subject">
+              <Select
+                className="font-semibold text-[13px]"
+                popupClassName="rounded-xl"
+                options={[
+                  { value: 'KHOA HỌC MÁY TÍNH', label: 'Khoa học máy tính' },
+                  { value: 'ĐẠI SỐ TUYẾN TÍNH', label: 'Đại số tuyến tính' },
+                  { value: 'KINH TẾ VĨ MÔ', label: 'Kinh tế vĩ mô' },
+                  { value: 'TRIẾT HỌC MÁC-LÊNIN', label: 'Triết học Mác-Lênin' },
+                ]}
+              />
+            </Form.Item>
+
+            <Form.Item
+              label={<span className="text-[10px] font-bold text-black/50 uppercase tracking-wider">Mô tả định hướng nhóm</span>}
+              name="description"
+              rules={[{ required: true, message: 'Vui lòng nhập mô tả!' }]}
+            >
+              <textarea 
+                rows={3} 
+                placeholder="Nhóm tập trung chia sẻ tài liệu ôn thi cuối kỳ, tài liệu nghiên cứu giải thuật và bài tập lớn..." 
+                className="w-full bg-black/[0.01] border border-black/8 rounded-xl px-3.5 py-2.5 text-black text-[13px] outline-none focus:border-[#ff5c00] transition-all resize-none"
+              />
+            </Form.Item>
+
+            <div className="flex gap-3 justify-end pt-4 border-t border-black/5">
+              <Button onClick={() => setShowCreateModal(false)} className="rounded-xl font-semibold text-[12px] border-black/10 hover:border-black/20 h-9">
+                Hủy thao tác
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                className="rounded-xl font-bold text-[12.5px] h-9"
+              >
+                Xác nhận tạo nhóm
+              </Button>
+            </div>
+          </Form>
+        </div>
       </Modal>
     </div>
   );

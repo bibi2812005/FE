@@ -4,29 +4,17 @@
  */
 
 import { useState, useEffect } from 'react';
-import {
-  Table, Button, Tag, Modal, Form, Input, Select, Upload, Tooltip, message, Segmented,
-} from 'antd';
-import {
-  UploadOutlined,
-  FolderAddOutlined,
-  UnorderedListOutlined,
-  AppstoreOutlined,
-  MessageOutlined,
-  DeleteOutlined,
-  RobotOutlined,
-  InboxOutlined,
-  FileAddOutlined,
-} from '@ant-design/icons';
-import AppHeader from '../components/AppHeader.jsx';
+import { Table, Button, Tag, Modal, Form, Select, Upload, Tooltip, message, Segmented } from 'antd';
+import { motion, AnimatePresence } from 'framer-motion';
 import FileIcon from '../components/FileIcon.jsx';
 import { getFileTagColor, getFileTypeLabel, detectFileType } from '../utils/helpers.js';
+import { TAB_OPTIONS, UPLOAD_TYPE_OPTIONS } from '../data';
 
 const { Dragger } = Upload;
-const { TextArea } = Input;
 
 export default function DashboardScreen({
   documents,
+  searchTerm,
   onAddDocument,
   onRemoveDocument,
   onSelectActiveDocument,
@@ -34,20 +22,19 @@ export default function DashboardScreen({
   onLogout,
   onNavigate,
 }) {
-  const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [viewMode, setViewMode] = useState('list');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [form] = Form.useForm();
 
-  // Floating draggable bot state
+  // Draggable floating assistant state
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [offsetStart, setOffsetStart] = useState({ x: 0, y: 0 });
 
   const handleMouseDown = (e) => {
-    if (e.button !== 0) return; // Only left click
+    if (e.button !== 0) return;
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
     setOffsetStart({ x: position.x, y: position.y });
@@ -64,17 +51,12 @@ export default function DashboardScreen({
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isDragging) return;
-      const dx = e.clientX - dragStart.x;
-      const dy = e.clientY - dragStart.y;
-      
-      const newX = offsetStart.x + dx;
-      const newY = offsetStart.y + dy;
-      setPosition({ x: newX, y: newY });
+      setPosition({
+        x: offsetStart.x + (e.clientX - dragStart.x),
+        y: offsetStart.y + (e.clientY - dragStart.y)
+      });
     };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
+    const handleMouseUp = () => setIsDragging(false);
 
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
@@ -90,14 +72,12 @@ export default function DashboardScreen({
     const handleTouchMove = (e) => {
       if (!isDragging) return;
       const touch = e.touches[0];
-      const dx = touch.clientX - dragStart.x;
-      const dy = touch.clientY - dragStart.y;
-      setPosition({ x: offsetStart.x + dx, y: offsetStart.y + dy });
+      setPosition({
+        x: offsetStart.x + (touch.clientX - dragStart.x),
+        y: offsetStart.y + (touch.clientY - dragStart.y)
+      });
     };
-
-    const handleTouchEnd = () => {
-      setIsDragging(false);
-    };
+    const handleTouchEnd = () => setIsDragging(false);
 
     if (isDragging) {
       window.addEventListener('touchmove', handleTouchMove, { passive: false });
@@ -110,16 +90,14 @@ export default function DashboardScreen({
   }, [isDragging, dragStart, offsetStart]);
 
   const filteredDocs = documents.filter((doc) => {
-    const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = doc.name.toLowerCase().includes((searchTerm || '').toLowerCase());
     const matchesTab = activeTab === 'all' || doc.type === activeTab;
     return matchesSearch && matchesTab;
   });
 
   const handleUploadSubmit = (values) => {
     let finalName = values.name;
-    if (!finalName.includes('.')) {
-      finalName += `.${values.type}`;
-    }
+    if (!finalName.includes('.')) finalName += `.${values.type}`;
 
     const newDoc = {
       id: 'doc_' + Date.now(),
@@ -141,7 +119,6 @@ export default function DashboardScreen({
     onNavigate('ai');
   };
 
-  // Table columns
   const columns = [
     {
       title: 'Tên tài liệu',
@@ -151,7 +128,7 @@ export default function DashboardScreen({
         <div className="flex items-center gap-3">
           <FileIcon type={record.type} />
           <span
-            className="font-bold text-[#0b1c30] hover:text-[#ea580c] transition-all cursor-pointer text-xs"
+            className="font-semibold text-black hover:text-[#ff5c00] transition-colors cursor-pointer text-[13px] tracking-tight"
             onClick={() => handleAskAIOnDoc(record)}
           >
             {text}
@@ -160,247 +137,329 @@ export default function DashboardScreen({
       ),
     },
     {
-      title: 'Loại',
+      title: 'Định dạng',
       dataIndex: 'type',
       key: 'type',
-      width: 100,
+      width: 120,
       render: (type) => (
-        <Tag color={getFileTagColor(type)} className="font-bold text-[10px] uppercase rounded-full">
+        <Tag color={getFileTagColor(type)} className="font-bold text-[9px] uppercase rounded-full border-none px-2.5 py-0.5">
           {getFileTypeLabel(type)}
         </Tag>
       ),
     },
     {
-      title: 'Ngày tải lên',
+      title: 'Ngày đồng bộ',
       dataIndex: 'uploadedAt',
       key: 'uploadedAt',
-      width: 160,
-      className: 'text-xs text-[#5d5f5f]',
+      width: 180,
+      className: 'text-[12.5px] text-black/55 font-medium',
     },
     {
-      title: 'Kích thước',
+      title: 'Dung lượng',
       dataIndex: 'size',
       key: 'size',
       width: 120,
-      className: 'text-xs text-[#5d5f5f]',
+      className: 'text-[12.5px] text-black/60 font-semibold',
     },
     {
-      title: 'Hành động',
+      title: '',
       key: 'actions',
-      width: 200,
+      width: 180,
       align: 'right',
       render: (_, record) => (
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-2.5">
           <Button
             type="primary"
-            ghost
             size="small"
-            icon={<MessageOutlined />}
             onClick={() => handleAskAIOnDoc(record)}
-            className="font-bold text-xs rounded-xl"
+            className="font-bold text-[11px] rounded-lg h-7 px-3.5"
           >
-            Hỏi AI
+            <i className="bi bi-chat-dots mr-1" /> Hỏi AI
           </Button>
           <Tooltip title="Xóa tạm thời">
             <Button
               type="text"
               danger
               size="small"
-              icon={<DeleteOutlined />}
+              className="text-black/40 hover:text-red-500 hover:bg-red-500/10 rounded-lg h-7 w-7 flex items-center justify-center cursor-pointer"
               onClick={() => {
                 onRemoveDocument(record.id);
                 message.success('Đã chuyển tài liệu vào Thùng rác.');
               }}
-            />
+            >
+              <i className="bi bi-trash3 text-[13px]" />
+            </Button>
           </Tooltip>
         </div>
       ),
     },
   ];
 
-  const tabOptions = [
-    { label: 'Tất cả', value: 'all' },
-    { label: 'PDF', value: 'pdf' },
-    { label: 'Word', value: 'docx' },
-    { label: 'Excel', value: 'xlsx' },
-    { label: 'Hình ảnh', value: 'image' },
-    { label: 'Video', value: 'video' },
-  ];
+  const gridContainer = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08
+      }
+    }
+  };
+
+  const gridItem = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }
+  };
 
   return (
-    <div className="flex-1 w-full flex flex-col min-h-screen text-left">
-      <main className="flex-1 p-6 md:p-8 flex flex-col min-h-screen text-left relative select-none">
-        <AppHeader searchTerm={searchTerm} onSearchChange={setSearchTerm} />
-
-        {/* Title + Actions */}
+    <div className="flex-1 w-full h-full overflow-y-auto px-4 md:px-8 pb-10 pt-4 text-left select-none relative">
+      <div>
+        
+        {/* Title + Action bar */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
-            <h2 className="text-2xl font-black text-[#0b1c30]">Tất cả tài liệu</h2>
-            <p className="text-xs text-[#5d5f5f] mt-0.5 font-semibold">Quản lý và tóm tắt tri thức tập trung tối ưu</p>
+            <h2 className="text-[23px] font-extrabold text-[#1d1d1f] tracking-tight">Thư viện của tôi</h2>
+            <p className="text-[13px] text-black/50 mt-0.5 font-semibold">Quản lý và số hóa học phần học thuật cùng Trợ lý AI</p>
           </div>
           <div className="flex items-center gap-3">
-            <Button
-              type="primary"
-              icon={<UploadOutlined />}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setShowUploadModal(true)}
-              className="rounded-xl font-bold text-xs bg-gradient-to-r from-[#ea580c] to-amber-500 hover:from-[#c2410c] hover:to-orange-500 border-none h-9 shadow-md shadow-orange-500/10 cursor-pointer"
+              className="bg-gradient-to-r from-[#ff8a00] to-[#ff5c00] text-white rounded-xl font-bold text-[13px] px-4.5 py-2 flex items-center gap-1.5 shadow-lg orange-glow cursor-pointer"
             >
-              Tải tài liệu mới
-            </Button>
-            <Button
-              icon={<FolderAddOutlined />}
+              <i className="bi bi-cloud-arrow-up text-[14px]" /> Tải lên tài liệu
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
                 const name = prompt('Nhập tên thư mục mới:');
-                if (name) message.success(`Tạo thư mục "${name}" thành công.`);
+                if (name) message.success(`Đã tạo thư mục "${name}"`);
               }}
-              className="rounded-xl font-bold text-xs h-9 cursor-pointer"
+              className="bg-black/[0.01] border border-black/8 hover:border-black/20 text-black rounded-xl font-semibold text-[13px] px-4 py-2 flex items-center gap-1.5 cursor-pointer"
             >
-              Tạo thư mục mới
-            </Button>
+              <i className="bi bi-folder-plus text-[14px] text-black/60" /> Tạo mục mới
+            </motion.button>
+
             <Segmented
               options={[
-                { value: 'list', icon: <UnorderedListOutlined /> },
-                { value: 'grid', icon: <AppstoreOutlined /> },
+                { value: 'list', icon: <i className="bi bi-list-ul" /> },
+                { value: 'grid', icon: <i className="bi bi-grid-3x3-gap" /> },
               ]}
               value={viewMode}
               onChange={setViewMode}
-              className="p-0.5 rounded-xl border border-slate-200/40 bg-white"
+              className="p-0.5 rounded-xl border border-black/5 bg-black/[0.005]"
             />
           </div>
         </div>
 
-        {/* Filter Tabs (Sleek Tailwind Pills) */}
+        {/* Categories / Filter tabs */}
         <div className="mb-6 flex flex-wrap gap-2.5">
-          {tabOptions.map((tab) => {
+          {TAB_OPTIONS.map((tab) => {
             const count = tab.value === 'all'
               ? documents.length
               : documents.filter((d) => d.type === tab.value).length;
             const isActive = activeTab === tab.value;
+
+            // Soft luxury format color mapping
+            const tabColors = {
+              all: {
+                active: 'bg-[#1d1d1f] text-white font-extrabold shadow-sm border border-[#1d1d1f]',
+                inactive: 'bg-black/[0.015] text-black/60 border border-black/5 hover:border-black/20 hover:text-black font-semibold',
+                badgeActive: 'bg-white/20 text-white',
+                badgeInactive: 'bg-black/5 text-black/40'
+              },
+              pdf: {
+                active: 'bg-red-500 text-white font-extrabold shadow-md shadow-red-500/10 border border-red-500',
+                inactive: 'bg-red-50/50 text-red-600 border border-red-100/40 hover:bg-red-50 hover:text-red-700 font-semibold',
+                badgeActive: 'bg-white/20 text-white',
+                badgeInactive: 'bg-red-100/50 text-red-600'
+              },
+              docx: {
+                active: 'bg-blue-500 text-white font-extrabold shadow-md shadow-blue-500/10 border border-blue-500',
+                inactive: 'bg-blue-50/50 text-blue-600 border border-blue-100/40 hover:bg-blue-50 hover:text-blue-700 font-semibold',
+                badgeActive: 'bg-white/20 text-white',
+                badgeInactive: 'bg-blue-100/50 text-blue-600'
+              },
+              pptx: {
+                active: 'bg-orange-500 text-white font-extrabold shadow-md shadow-orange-500/10 border border-orange-500',
+                inactive: 'bg-orange-50/50 text-orange-600 border border-orange-100/40 hover:bg-orange-50 hover:text-orange-700 font-semibold',
+                badgeActive: 'bg-white/20 text-white',
+                badgeInactive: 'bg-orange-100/50 text-orange-600'
+              },
+              xlsx: {
+                active: 'bg-emerald-500 text-white font-extrabold shadow-md shadow-emerald-500/10 border border-emerald-500',
+                inactive: 'bg-emerald-50/50 text-emerald-600 border border-emerald-100/40 hover:bg-emerald-50 hover:text-emerald-700 font-semibold',
+                badgeActive: 'bg-white/20 text-white',
+                badgeInactive: 'bg-emerald-100/50 text-emerald-600'
+              },
+              txt: {
+                active: 'bg-purple-500 text-white font-extrabold shadow-md shadow-purple-500/10 border border-purple-500',
+                inactive: 'bg-purple-50/50 text-purple-600 border border-purple-100/40 hover:bg-purple-50 hover:text-purple-700 font-semibold',
+                badgeActive: 'bg-white/20 text-white',
+                badgeInactive: 'bg-purple-100/50 text-purple-600'
+              }
+            };
+
+            const classes = tabColors[tab.value] || tabColors.all;
+
             return (
-              <button
+              <motion.button
                 key={tab.value}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => setActiveTab(tab.value)}
-                className={`px-4.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer ${
-                  isActive
-                    ? 'bg-gradient-to-tr from-[#ea580c] to-orange-500 text-white shadow-lg shadow-orange-500/20 scale-105'
-                    : 'bg-white text-slate-600 border border-slate-200/50 hover:border-[#ea580c]/30 hover:text-[#ea580c]'
+                className={`px-4.5 py-2 rounded-full text-[12px] transition-all duration-200 flex items-center gap-2 cursor-pointer ${
+                  isActive ? classes.active : classes.inactive
                 }`}
               >
                 <span>{tab.label}</span>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
-                  isActive ? 'bg-white/20 text-white' : 'bg-slate-50 text-slate-500'
+                <span className={`text-[9.5px] px-2 py-0.5 rounded-full font-bold ${
+                  isActive ? classes.badgeActive : classes.badgeInactive
                 }`}>
                   {count}
                 </span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
 
-        {/* Content */}
-        {viewMode === 'list' ? (
-          <div className="bg-white rounded-3xl border border-slate-200/40 p-2 shadow-sm overflow-hidden flex-1 animate-scale-up">
-            <Table
-              columns={columns}
-              dataSource={filteredDocs}
-              rowKey="id"
-              pagination={{
-                pageSize: 10,
-                showTotal: (total) => `Hiển thị ${total} tài liệu học tập`,
-                className: 'px-4',
-              }}
-              locale={{ emptyText: 'Không tìm thấy tài liệu nào' }}
-              className="rounded-2xl"
-              size="middle"
-            />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 flex-1 animate-scale-up">
-            {filteredDocs.map((doc) => (
-              <div key={doc.id} className="bg-white rounded-2xl border border-slate-200/40 p-5 soft-shadow flex flex-col justify-between group overflow-hidden relative hover:-translate-y-1 transition-all duration-300">
-                <div>
-                  <div className="flex items-start justify-between gap-2 mb-4">
-                    <Tag color={getFileTagColor(doc.type)} className="font-extrabold text-[10px] rounded-full uppercase">
-                      {getFileTypeLabel(doc.type)}
-                    </Tag>
-                    <Button type="text" danger size="small" icon={<DeleteOutlined />} onClick={() => { onRemoveDocument(doc.id); message.success('Đã chuyển vào Thùng rác.'); }} />
+        {/* Main List content viewport */}
+        <AnimatePresence mode="wait">
+          {viewMode === 'list' ? (
+            <motion.div 
+              key="list-view"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              className="premium-glass rounded-2xl border border-black/5 p-2 shadow-sm overflow-hidden flex-1"
+            >
+              <Table
+                columns={columns}
+                dataSource={filteredDocs}
+                rowKey="id"
+                pagination={{
+                  pageSize: 10,
+                  showTotal: (total) => `Tổng cộng ${total} tài liệu`,
+                  className: 'px-4 font-semibold text-black/45 text-[12px]',
+                }}
+                locale={{ emptyText: <span className="text-black/35 text-[12.5px] font-semibold py-8 block text-center">Thư mục trống</span> }}
+                size="middle"
+              />
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="grid-view"
+              variants={gridContainer}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 flex-1"
+            >
+              {filteredDocs.map((doc) => (
+                <motion.div 
+                  key={doc.id}
+                  variants={gridItem}
+                  className="bg-white rounded-2xl border border-black/5 p-5 shadow-sm flex flex-col justify-between group overflow-hidden relative hover-card-depth cursor-pointer"
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <Tag color={getFileTagColor(doc.type)} className="font-bold text-[9px] rounded-full uppercase border-none px-2 py-0.5">
+                        {getFileTypeLabel(doc.type)}
+                      </Tag>
+                      <Button 
+                        type="text" 
+                        danger 
+                        size="small" 
+                        className="text-black/30 hover:text-red-500 hover:bg-red-500/10 rounded-lg h-7 w-7 flex items-center justify-center cursor-pointer"
+                        onClick={(e) => { 
+                          e.stopPropagation();
+                          onRemoveDocument(doc.id); 
+                          message.success('Đã chuyển tài liệu vào Thùng rác.'); 
+                        }}
+                      >
+                        <i className="bi bi-trash3" />
+                      </Button>
+                    </div>
+                    <div className="flex gap-3 items-center" onClick={() => handleAskAIOnDoc(doc)}>
+                      <FileIcon type={doc.type} />
+                      <h4 className="font-semibold text-[14.5px] text-black tracking-tight line-clamp-1 group-hover:text-[#ff5c00] transition-colors">{doc.name}</h4>
+                    </div>
+                    <p className="text-[12.5px] text-black/55 font-semibold leading-relaxed line-clamp-2 bg-black/[0.005] p-3 rounded-xl border border-black/5">
+                      {doc.content || 'Nhấp "Hỏi AI" để bắt đầu tìm hiểu và số hóa tệp tin...'}
+                    </p>
                   </div>
-                  <div className="flex gap-3 items-center mb-3">
-                    <FileIcon type={doc.type} />
-                    <h4 className="font-extrabold text-sm text-[#0b1c30] line-clamp-1 group-hover:text-[#ea580c] transition-all">{doc.name}</h4>
+                  <div className="pt-3.5 border-t border-black/5 flex justify-between items-center mt-4">
+                    <div className="text-[11px] text-black/40 font-semibold space-y-0.5">
+                      <p>{doc.uploadedAt}</p>
+                      <p>{doc.size}</p>
+                    </div>
+                    <Button 
+                      type="primary" 
+                      size="small" 
+                      onClick={() => handleAskAIOnDoc(doc)} 
+                      className="rounded-lg font-bold text-[11px] h-7 px-3"
+                    >
+                      <i className="bi bi-chat-dots mr-1" /> Hỏi AI
+                    </Button>
                   </div>
-                  <p className="text-[11px] text-[#5d5f5f] font-semibold leading-relaxed line-clamp-2 mb-4 bg-slate-50 p-2.5 rounded-lg border border-slate-100/50">
-                    {doc.content || 'Nhấp "Hỏi AI" để nạp tệp dữ liệu vào phiên làm việc mới.'}
-                  </p>
-                </div>
-                <div className="pt-4 border-t border-slate-100 flex justify-between items-center mt-3">
-                  <div className="text-[10px] text-[#5d5f5f]/60">
-                    <p>{doc.uploadedAt}</p>
-                    <p className="font-bold">{doc.size}</p>
-                  </div>
-                  <Button type="primary" size="small" icon={<MessageOutlined />} onClick={() => handleAskAIOnDoc(doc)} className="rounded-xl font-bold text-xs bg-gradient-to-r from-[#ea580c] to-amber-500 border-none h-7">
-                    Hỏi AI
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Draggable AI Bot FAB */}
+        {/* Floating Draggable AI Assistant with glowing ring */}
         <div
           className="fixed z-50 touch-none select-none"
           style={{
-            bottom: '30px',
+            bottom: '40px',
             right: '40px',
             transform: `translate(${position.x}px, ${position.y}px)`,
-            transition: isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28)',
+            transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)',
           }}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
         >
-          <Tooltip title={isDragging ? "Đang kéo thả..." : "Kéo thả tôi đi bất kỳ đâu!"} placement="left">
+          <Tooltip title={isDragging ? "Đang kéo thả..." : "Kéo tôi đến bất kỳ góc nào!"} placement="left">
             <button
               onClick={() => {
                 const moved = Math.abs(position.x - offsetStart.x) > 8 || Math.abs(position.y - offsetStart.y) > 8;
-                if (!moved) {
-                  onNavigate('ai');
-                }
+                if (!moved) onNavigate('ai');
               }}
-              className={`w-14 h-14 bg-gradient-to-tr from-[#ea580c] to-amber-500 hover:from-[#c2410c] hover:to-orange-500 text-white rounded-full flex items-center justify-center border-4 border-white shadow-2xl hover:scale-110 active:scale-95 transition-all cursor-grab active:cursor-grabbing ${
-                isDragging ? 'scale-110 shadow-orange-500/30' : ''
+              className={`w-[54px] h-[54px] bg-gradient-to-tr from-[#ff8a00] to-[#ff5c00] text-white rounded-full flex items-center justify-center border-2 border-white/20 shadow-2xl orange-glow hover:scale-105 active:scale-95 transition-all cursor-grab active:cursor-grabbing ${
+                isDragging ? 'scale-110 shadow-2xl ring-4 ring-[#ff5c00]/30' : ''
               }`}
             >
-              <RobotOutlined style={{ fontSize: 24 }} className={isDragging ? "animate-pulse" : "animate-bounce"} />
+              <i className={`bi bi-stars text-[22px] ${isDragging ? 'animate-pulse' : 'animate-bounce duration-[3s]'}`} />
             </button>
           </Tooltip>
         </div>
-      </main>
+      </div>
 
-      {/* Upload Modal - Beautifully Redesigned Center Box */}
+      {/* Upload Modal (Premium Vercel Glassmorphism) */}
       <Modal
         title={null}
         open={showUploadModal}
         onCancel={() => setShowUploadModal(false)}
         footer={null}
-        width={500}
-        className="custom-premium-modal rounded-3xl overflow-hidden p-0 border border-slate-100 shadow-2xl"
+        width={480}
+        styles={{ body: { padding: 0 } }}
         destroyOnClose
         centered
       >
-        {/* Banner header of Modal */}
-        <div className="bg-gradient-to-r from-[#ea580c] to-amber-500 px-6 py-5 text-white flex items-center gap-4 relative overflow-hidden">
-          <div className="absolute -top-12 -right-12 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none" />
-          <div className="w-11 h-11 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center text-white border border-white/20">
-            <FileAddOutlined style={{ fontSize: 22 }} />
+        <div className="bg-[#fafafb] px-6 py-6 border-b border-black/5 text-black flex items-center gap-4 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff5c00]/3 rounded-full blur-2xl pointer-events-none" />
+          <div className="w-10 h-10 rounded-xl bg-black/[0.01] border border-black/5 flex items-center justify-center text-[#ff5c00] orange-glow">
+            <i className="bi bi-file-earmark-plus text-[20px]" />
           </div>
-          <div>
-            <h3 className="text-base font-black text-white leading-none">Tải lên tài liệu học trình</h3>
-            <p className="text-[10px] text-white/80 font-bold uppercase tracking-wider mt-1.5">Nạp cơ sở dữ liệu học tập thông minh</p>
+          <div className="text-left">
+            <h3 className="text-[16px] font-bold text-black tracking-tight">Tải tài liệu lên</h3>
+            <p className="text-[10px] text-black/40 font-bold uppercase tracking-wider mt-1">Đồng bộ học trình thông minh</p>
           </div>
         </div>
 
-        <div className="p-6 bg-[#fcfdff]">
+        <div className="p-6 bg-white rounded-b-2xl">
           <Dragger
             beforeUpload={(file) => {
               form.setFieldsValue({
@@ -411,61 +470,62 @@ export default function DashboardScreen({
               return false;
             }}
             showUploadList={false}
-            className="!rounded-2xl !border-dashed !border-2 !border-orange-200 hover:!border-[#ea580c]/60 !bg-white hover:!bg-[#fff7ed]/35 mb-6 transition-all duration-300 py-6"
+            className="!rounded-2xl !border-dashed !border-black/10 hover:!border-[#ff5c00]/40 !bg-black/[0.005] hover:!bg-[#ff5c00]/5 mb-6 transition-all duration-300 py-7"
           >
             <p className="ant-upload-drag-icon">
-              <InboxOutlined style={{ color: '#ea580c', fontSize: 38 }} className="animate-pulse" />
+              <i className="bi bi-cloud-arrow-up text-[#ff5c00] text-[40px] animate-pulse" />
             </p>
-            <p className="text-xs font-black text-[#0b1c30] mt-3">Kéo & thả tệp tin học tập vào đây</p>
-            <p className="text-[10px] text-slate-400 mt-1 font-semibold">
-              Hoặc <span className="text-[#ea580c] font-black underline hover:text-[#c2410c]">Bấm chọn từ thiết bị</span>
+            <p className="text-[13px] font-bold text-black mt-4">Kéo & thả tệp tin học tập vào đây</p>
+            <p className="text-[11.5px] text-black/50 mt-1 font-semibold">
+              Hoặc <span className="text-[#ff5c00] font-bold cursor-pointer">Bấm chọn tệp tin</span>
             </p>
-            <p className="text-[9px] text-slate-400/80 mt-2 font-bold uppercase tracking-wide bg-slate-50 border border-slate-100 rounded-full px-3 py-0.5 inline-block">
-              Hỗ trợ PDF, DOCX, XLSX, hình ảnh
+            <p className="text-[9px] text-[#ff5c00] font-bold uppercase tracking-wider bg-[#ff5c00]/10 border border-[#ff5c00]/20 rounded-full px-3 py-1 mt-3 inline-block">
+              Hỗ trợ PDF, DOCX, XLSX, Hình ảnh
             </p>
           </Dragger>
 
           <Form form={form} layout="vertical" onFinish={handleUploadSubmit} initialValues={{ type: 'pdf', size: '1.5 MB' }}>
             <Form.Item
-              label={<span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Tên tệp tài liệu</span>}
+              label={<span className="text-[10px] font-bold text-black/50 uppercase tracking-wider">Tên tài liệu</span>}
               name="name"
-              rules={[{ required: true, message: 'Nhập tên tệp tài liệu!' }]}
+              rules={[{ required: true, message: 'Vui lòng điền tên tệp!' }]}
             >
-              <Input placeholder="Giao_Trinh_Giai_Tich.pdf" className="rounded-xl font-semibold border-slate-200 hover:border-orange-400 focus:border-orange-500" />
+              <input 
+                type="text" 
+                placeholder="Giao_Trinh_Khai_Pha_Du_Lieu.pdf" 
+                className="w-full bg-black/[0.01] border border-black/8 rounded-xl px-3.5 py-2.5 text-black text-[13px] outline-none focus:border-[#ff5c00] transition-all"
+              />
             </Form.Item>
 
             <div className="grid grid-cols-2 gap-4">
-              <Form.Item label={<span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Phân loại định dạng</span>} name="type">
-                <Select
-                  className="rounded-xl select-orange-accent"
-                  popupClassName="rounded-xl"
-                  options={[
-                    { value: 'pdf', label: 'Tài liệu PDF' },
-                    { value: 'docx', label: 'Văn bản Word' },
-                    { value: 'xlsx', label: 'Bảng tính Excel' },
-                    { value: 'image', label: 'Hình ảnh' },
-                    { value: 'video', label: 'Video bài giảng' },
-                    { value: 'other', label: 'Loại khác' },
-                  ]}
-                />
+              <Form.Item label={<span className="text-[10px] font-bold text-black/50 uppercase tracking-wider">Loại tài liệu</span>} name="type">
+                <Select className="font-semibold text-[13px]" popupClassName="rounded-xl" options={UPLOAD_TYPE_OPTIONS} />
               </Form.Item>
-              <Form.Item label={<span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Dung lượng tệp</span>} name="size">
-                <Input placeholder="2.8 MB" className="rounded-xl border-slate-200 hover:border-orange-400 focus:border-orange-500 font-semibold" />
+              <Form.Item label={<span className="text-[10px] font-bold text-black/50 uppercase tracking-wider">Dung lượng tệp</span>} name="size">
+                <input 
+                  type="text" 
+                  placeholder="2.5 MB" 
+                  className="w-full bg-black/[0.01] border border-black/8 rounded-xl px-3.5 py-2.5 text-black text-[13px] outline-none focus:border-[#ff5c00] transition-all"
+                />
               </Form.Item>
             </div>
 
-            <Form.Item label={<span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Nội dung trích dẫn (để Trợ lý AI đọc hiểu)</span>} name="content">
-              <TextArea rows={3} placeholder="Điền hoặc dán nội dung chính cốt lõi của bài học tại đây..." className="rounded-xl font-semibold border-slate-200 hover:border-orange-400 focus:border-orange-500 text-xs" />
+            <Form.Item label={<span className="text-[10px] font-bold text-black/50 uppercase tracking-wider">Nội dung cốt lõi (Để Trợ lý AI phân tích)</span>} name="content">
+              <textarea 
+                rows={3} 
+                placeholder="Điền hoặc dán tóm tắt lý thuyết, nội dung cốt lõi của môn học vào đây..." 
+                className="w-full bg-black/[0.01] border border-black/8 rounded-xl px-3.5 py-2.5 text-black text-[13px] outline-none focus:border-[#ff5c00] transition-all resize-none"
+              />
             </Form.Item>
 
-            <div className="flex gap-3 justify-end pt-3 border-t border-slate-100">
-              <Button onClick={() => setShowUploadModal(false)} className="rounded-xl font-bold text-xs h-9 cursor-pointer">
+            <div className="flex gap-3 justify-end pt-4 border-t border-black/5">
+              <Button onClick={() => setShowUploadModal(false)} className="rounded-xl font-semibold text-[12px] border-black/10 hover:border-black/20 h-9">
                 Hủy thao tác
               </Button>
               <Button
                 type="primary"
                 htmlType="submit"
-                className="rounded-xl font-bold text-xs h-9 bg-gradient-to-r from-[#ea580c] to-amber-500 hover:from-[#c2410c] hover:to-orange-500 border-none shadow-md shadow-orange-500/10 cursor-pointer"
+                className="rounded-xl font-bold text-[12.5px] h-9"
               >
                 Xác nhận tải lên
               </Button>

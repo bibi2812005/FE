@@ -1,32 +1,17 @@
-
+import { FILE_TAG_COLORS, FILE_TYPE_LABELS } from '../data';
 
 /**
  * Returns Ant Design Tag color string for each document type.
  */
 export function getFileTagColor(type) {
-  const colorMap = {
-    pdf: 'red',
-    docx: 'blue',
-    xlsx: 'green',
-    image: 'purple',
-    video: 'magenta',
-  };
-  return colorMap[type] || 'default';
+  return FILE_TAG_COLORS[type] || 'default';
 }
 
 /**
  * Returns human-readable label for document type.
  */
 export function getFileTypeLabel(type) {
-  const labelMap = {
-    pdf: 'PDF',
-    docx: 'Word',
-    xlsx: 'Excel',
-    image: 'Hình ảnh',
-    video: 'Video',
-    other: 'Khác',
-  };
-  return labelMap[type] || 'Tệp';
+  return FILE_TYPE_LABELS[type] || 'Tệp';
 }
 
 /**

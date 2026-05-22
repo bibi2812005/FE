@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { initialDocuments } from '../constants/documents';
+import { initialDocuments } from '../data';
 
 /**
  * Custom hook for managing document state (CRUD operations).

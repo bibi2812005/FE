@@ -1,23 +1,21 @@
-import {
-  FileTextOutlined,
-  FileWordOutlined,
-  FileExcelOutlined,
-  FileImageOutlined,
-  VideoCameraOutlined,
-  FileOutlined,
-} from '@ant-design/icons';
-
 /**
- * Reusable FileIcon component representing the document type.
+ * Reusable FileIcon component — Bootstrap Icons for document types.
  */
-export default function FileIcon({ type, className, style }) {
-  const iconMap = {
-    pdf: <FileTextOutlined style={{ color: '#ef4444', fontSize: 18, ...style }} className={className} />,
-    docx: <FileWordOutlined style={{ color: '#3b82f6', fontSize: 18, ...style }} className={className} />,
-    xlsx: <FileExcelOutlined style={{ color: '#22c55e', fontSize: 18, ...style }} className={className} />,
-    image: <FileImageOutlined style={{ color: '#a855f7', fontSize: 18, ...style }} className={className} />,
-    video: <VideoCameraOutlined style={{ color: '#ec4899', fontSize: 18, ...style }} className={className} />,
+export default function FileIcon({ type, className = '', style = {} }) {
+  const iconConfig = {
+    pdf: { icon: 'bi-file-earmark-pdf-fill', color: '#ff3b30' },
+    docx: { icon: 'bi-file-earmark-word-fill', color: '#0071e3' },
+    xlsx: { icon: 'bi-file-earmark-excel-fill', color: '#34c759' },
+    image: { icon: 'bi-file-earmark-image-fill', color: '#af52de' },
+    video: { icon: 'bi-file-earmark-play-fill', color: '#ff2d55' },
   };
 
-  return iconMap[type] || <FileOutlined style={{ color: '#94a3b8', fontSize: 18, ...style }} className={className} />;
+  const config = iconConfig[type] || { icon: 'bi-file-earmark-fill', color: '#86868b' };
+
+  return (
+    <i
+      className={`bi ${config.icon} ${className}`}
+      style={{ color: config.color, fontSize: 18, ...style }}
+    />
+  );
 }

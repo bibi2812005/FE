@@ -1,5 +1,5 @@
 /**
- * Initial document dataset for AI Study Hub demo.
+ * Initial document dataset for AI Study Hub.
  */
 export const initialDocuments = [
   {

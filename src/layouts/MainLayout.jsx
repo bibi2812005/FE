@@ -1,7 +1,12 @@
+import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../components/Sidebar.jsx';
+import AppHeader from '../components/AppHeader.jsx';
 
 /**
- * Layout wrapper providing sidebar + content area for authenticated pages.
+ * Layout wrapper — High-end Apple Minimalist Light theme.
+ * Completely static viewport architecture with isolated scrolling containers.
+ * Soft light background (#f5f5f7) for a warm premium Apple aesthetic.
+ * Header is PERMANENTLY visible on all views to prevent unmounting/layout shift bugs.
  */
 export default function MainLayout({
   currentView,
@@ -11,10 +16,19 @@ export default function MainLayout({
   storagePercentage,
   documentsCount,
   deletedDocsCount = 0,
+  searchTerm,
+  onSearchChange,
+  avatarUrl,
+  accentColor,
   children,
 }) {
   return (
-    <div className="w-full min-h-screen bg-[#f2f6ff] text-[#0b1c30] flex flex-row font-sans">
+    <div className="w-full min-h-screen bg-[#f5f5f7] text-[#1d1d1f] flex flex-row font-sans relative overflow-hidden grid-mesh animate-fade-in">
+      {/* Background soft ambient lights */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#ff5c00]/2 rounded-full blur-[120px] pointer-events-none -z-10 animate-pulse duration-[8s]" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#007aff]/1 rounded-full blur-[120px] pointer-events-none -z-10 animate-pulse duration-[10s]" />
+
+      {/* Modern Bright Sidebar */}
       <Sidebar
         currentView={currentView}
         onNavigate={onNavigate}
@@ -23,8 +37,44 @@ export default function MainLayout({
         storagePercentage={storagePercentage}
         documentsCount={documentsCount}
         deletedDocsCount={deletedDocsCount}
+        avatarUrl={avatarUrl}
+        accentColor={accentColor}
       />
-      <div className="flex-1 flex flex-col min-h-screen ml-64">{children}</div>
+
+      {/* Central Content Panel - Immersive & Premium */}
+      <div className="flex-1 flex flex-col h-screen max-h-screen ml-[260px] overflow-hidden relative z-10 bg-[#f5f5f7]">
+        
+        {/* App Header (Static at the top, conditionally hidden on settings/trash as requested) */}
+        {!['profile', 'trash'].includes(currentView) && (
+          <div className="px-5 md:px-8 pt-5 pb-3 bg-[#f5f5f7] z-30 flex-shrink-0">
+            <AppHeader 
+              searchTerm={searchTerm} 
+              onSearchChange={onSearchChange}
+              avatarUrl={avatarUrl}
+              accentColor={accentColor}
+            />
+          </div>
+        )}
+
+        {/* Independent Page Viewport Container - The "Khung" (Frame) */}
+        <div className="flex-1 overflow-hidden relative flex flex-col w-full h-full px-4 pb-4 pt-1">
+          <div className="flex-1 bg-white/60 backdrop-blur-3xl rounded-[28px] border border-black/[0.04] shadow-sm overflow-hidden relative flex flex-col ring-1 ring-white/50">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentView}
+                initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.98, y: -10 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="flex-1 flex flex-col w-full h-full overflow-hidden"
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 }

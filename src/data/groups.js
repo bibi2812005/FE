@@ -1,5 +1,5 @@
 /**
- * Initial community groups dataset for AI Study Hub demo.
+ * Initial community groups dataset for AI Study Hub.
  */
 export const initialGroups = [
   {
