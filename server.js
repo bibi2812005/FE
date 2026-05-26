@@ -8,6 +8,7 @@ import path from "path";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
 import { createServer as createViteServer } from "vite";
+import { createDatabaseConnection } from "./src/config/index.js";
 
 dotenv.config();
 
@@ -42,7 +43,30 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });
 });
 
-// 2. API: Standard AI Chat
+// 2. API: Register user
+app.post("/api/register", async (req, res) => {
+  try {
+    const { email_or_username, password } = req.body;
+
+    if (!email_or_username || !password) {
+      return res.status(400).json({ success: false, message: "Vui lòng điền đầy đủ thông tin đăng ký." });
+    }
+
+    const connection = await createDatabaseConnection();
+    await connection.execute(
+      "INSERT INTO users (email_or_username, password_hash) VALUES (?, ?)",
+      [email_or_username, password]
+    );
+    await connection.end();
+
+    return res.json({ success: true, message: "Đăng ký tài khoản thành công." });
+  } catch (error) {
+    console.error("Register API Error:", error);
+    return res.status(500).json({ success: false, message: error.message || "Lỗi máy chủ khi đăng ký." });
+  }
+});
+
+// 3. API: Standard AI Chat
 app.post("/api/gemini/chat", async (req, res) => {
   try {
     const { prompt, history = [], documentContext = "", documentName = "" } = req.body;

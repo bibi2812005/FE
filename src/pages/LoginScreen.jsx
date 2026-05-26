@@ -12,6 +12,9 @@ export default function LoginScreen({ onLoginSuccess, onNavigate, currentView })
   const [errorMsg, setErrorMsg] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [emailOrUsername, setEmailOrUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -20,33 +23,66 @@ export default function LoginScreen({ onLoginSuccess, onNavigate, currentView })
     form.resetFields();
   }, [currentView, form]);
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async () => {
     setErrorMsg('');
+
+    if (!emailOrUsername || !password) {
+      setErrorMsg('Vui lòng điền đầy đủ thông tin!');
+      return;
+    }
+
     setIsLoading(true);
 
-    // High-end simulated loading delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    setIsLoading(false);
     if (isRegister) {
-      if (values.password !== values.confirmPassword) {
+      if (password !== confirmPassword) {
         setErrorMsg('Mật khẩu nhập lại không trùng khớp.');
+        setIsLoading(false);
         return;
       }
-      message.success('Đăng ký tài khoản thành công! Tự động đăng nhập...');
-      onLoginSuccess(values.usernameOrEmail);
-    } else {
-      if (!values.usernameOrEmail) {
-        setErrorMsg('Vui lòng điền email hoặc tên đăng nhập.');
-        return;
+
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email_or_username: emailOrUsername,
+            password,
+          }),
+        });
+
+        const data = await response.json();
+        setIsLoading(false);
+
+        if (data.success) {
+          message.success('Đăng ký tài khoản thành công! Tự động đăng nhập...');
+          onLoginSuccess(emailOrUsername);
+        } else {
+          setErrorMsg(data.message || 'Lỗi đăng ký. Vui lòng thử lại.');
+        }
+      } catch (error) {
+        console.error('Lỗi kết nối API:', error);
+        setErrorMsg('Không thể kết nối đến máy chủ Backend!');
+        setIsLoading(false);
       }
-      if (!values.password || values.password.length < 6) {
-        setErrorMsg('Mật khẩu phải chứa ít nhất 6 ký tự.');
-        return;
-      }
-      message.success('Đăng nhập thành công!');
-      onLoginSuccess(values.usernameOrEmail);
+      return;
     }
+
+    await new Promise(resolve => setTimeout(resolve, 800));
+    setIsLoading(false);
+
+    if (!emailOrUsername) {
+      setErrorMsg('Vui lòng điền email hoặc tên đăng nhập.');
+      return;
+    }
+    if (!password || password.length < 6) {
+      setErrorMsg('Mật khẩu phải chứa ít nhất 6 ký tự.');
+      return;
+    }
+
+    message.success('Đăng nhập thành công!');
+    onLoginSuccess(emailOrUsername);
   };
 
   const handleGoogleLogin = async () => {
@@ -114,7 +150,7 @@ export default function LoginScreen({ onLoginSuccess, onNavigate, currentView })
               form={form}
               layout="vertical"
               onFinish={handleSubmit}
-              initialValues={{ usernameOrEmail: 'vuongbaovipvip@gmail.com', password: '12345678', remember: true }}
+              initialValues={{ remember: true }}
               requiredMark={false}
             >
               {/* Username Input with luxury custom states */}
@@ -130,7 +166,8 @@ export default function LoginScreen({ onLoginSuccess, onNavigate, currentView })
                     autoComplete="username"
                     placeholder="name@university.edu.vn"
                     className="w-full bg-black/[0.01] border border-black/8 rounded-xl pl-10 pr-4 py-2.5 text-black text-[13px] placeholder-black/20 outline-none focus:border-[#ff5c00] focus:ring-1 focus:ring-[#ff5c00] transition-all"
-                    onChange={(e) => form.setFieldsValue({ usernameOrEmail: e.target.value })}
+                    value={emailOrUsername}
+                    onChange={(e) => setEmailOrUsername(e.target.value)}
                   />
                 </div>
               </Form.Item>
@@ -148,7 +185,8 @@ export default function LoginScreen({ onLoginSuccess, onNavigate, currentView })
                     autoComplete={isRegister ? 'new-password' : 'current-password'}
                     placeholder="••••••••"
                     className="w-full bg-black/[0.01] border border-black/8 rounded-xl pl-10 pr-10 py-2.5 text-black text-[13px] placeholder-black/20 outline-none focus:border-[#ff5c00] focus:ring-1 focus:ring-[#ff5c00] transition-all"
-                    onChange={(e) => form.setFieldsValue({ password: e.target.value })}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                   <button
                     type="button"
@@ -175,7 +213,8 @@ export default function LoginScreen({ onLoginSuccess, onNavigate, currentView })
                       autoComplete="new-password"
                       placeholder="••••••••"
                       className="w-full bg-black/[0.01] border border-black/8 rounded-xl pl-10 pr-4 py-2.5 text-black text-[13px] placeholder-black/20 outline-none focus:border-[#ff5c00] focus:ring-1 focus:ring-[#ff5c00] transition-all"
-                      onChange={(e) => form.setFieldsValue({ confirmPassword: e.target.value })}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                     />
                   </div>
                 </Form.Item>
